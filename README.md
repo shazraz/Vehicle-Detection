@@ -64,11 +64,11 @@ The neural network training features were significantly simpler than the ones us
 
 ## **3. Model Architecture & Training**
 
-### 2.3 Linear Support Vector Machine
+### 3.1 Linear Support Vector Machine
 
 The feature vectors for the 17760 training images were then extracted using the ```extract_features()``` function. The total time taken to extract the features described above was 127.03 seconds. The training data was then shuffled and 20% was split off to use as a test set after training. The model selected for the classifier was Scikit-Learn's ```LinearSVC()```. The total time taken to train the classifier was 7.05 sec. and a test accuracy of 99.41% was achieved. The trained classifer was saved using Pickle and is available in the repository files [here](URL for SVM)
 
-### 2.4 Neural Network
+### 3.2 Neural Network
 
 The decision to use a neural network was motivated by earlier projects in Udacity's Self-Driving Car Nanodegree where various architectures were implemented for a range of tasks from traffic sign classification to behavioral cloning to drive an autonomous vehicle in a simulator. The challenge in using a neural network for this task was to keep the time required for a forward pass as low as possible while maintaining a good level of accuracy, therefore the LeNet-5 architecture was selected. The model was built using Keras and is described below.
 
@@ -88,67 +88,69 @@ The decision to use a neural network was motivated by earlier projects in Udacit
 
 There are a couple of notable differences between the standard LeNet-5 architecture and the one used above. Firstly, the last FC layer has a single output node with a sigmoid activation function to obtain a probability of the classification result. An adam optimizer was used to initalize and gradually decrease the learning rate during training and a ```binary_crossentropy``` loss was used since this is a binary classification problem. The metric was set to ```accuracy```.
 
-The time required to read in the images and prepare the data for training was a total of 35.03 seconds, significantly less than the time required for the SVM. The model was trained using a batch size of 512 images for 15 epochs and an ```EarlyStopping()``` callback with a patience of 1 was used to terminate training if the validation loss in subsequent epochs reduced by less than 0.01. Once again, 20% of the data was split off and used as a validation set. The total training time for the model was 160.38 seconds and was terminated at Epoch 9. The figure below shows the 
+The time required to read in the images and prepare the data for training was a total of 35.03 seconds, significantly less than the time required for the SVM. The model was trained using a batch size of 512 images for 15 epochs and an ```EarlyStopping()``` callback with a patience of 1 was used to terminate training if the validation loss in subsequent epochs reduced by less than 0.01. Once again, 20% of the data was split off and used as a validation set. The total training time for the model was 160.38 seconds and was terminated at Epoch 9. The figure below shows the training and validation loss.
 
+<img src="./output_images/training_history.png">
 
+## **4. Object Localization**
 
-* Perform a Histogram of Oriented Gradients (HOG) feature extraction on a labeled training set of images and train a classifier Linear SVM classifier
-* Optionally, you can also apply a color transform and append binned color features, as well as histograms of color, to your HOG feature vector. 
-* Note: for those first two steps don't forget to normalize your features and randomize a selection for training and testing.
-* Implement a sliding-window technique and use your trained classifier to search for vehicles in images.
-* Run your pipeline on a video stream (start with the test_video.mp4 and later implement on full project_video.mp4) and create a heat map of recurring detections frame by frame to reject outliers and follow detected vehicles.
-* Estimate a bounding box for vehicles detected.
+### 4.1 Sliding Windows
 
-[//]: # (Image References)
-[image1]: ./examples/car_not_car.png
-[image2]: ./examples/HOG_example.jpg
-[image3]: ./examples/sliding_windows.jpg
-[image4]: ./examples/sliding_window.jpg
-[image5]: ./examples/bboxes_and_heat.png
-[image6]: ./examples/labels_map.png
-[image7]: ./examples/output_bboxes.png
-[video1]: ./project_video.mp4
+A sliding window approach was then used to extract image patches and feed them into either the SVM or Neural Net to perform classification. A window size of 80x80 pixels was used with a 75% overlap in both the x and y directions. It was found that the SVM classifier required a larger number and scale of windows to perform more accurately. The parameters for each of the models are described below.
 
+```
+SVM:
+window_scale = (1.0, 1.25, 2)
+x_start_stop = [400, 1280]
+y_start_stop = [[375, 520], [400, 580], [500, 700]]
+Total windows/image: 330
 
-###Histogram of Oriented Gradients (HOG)
+Neural Net:
+window_scale = (1.0, 1.5)
+x_start_stop = [[575, 1280], [400, 1280]]
+y_start_stop = [[375, 550], [450, 650]]
+Total windows/image: 238
+```
+The search limits of the image were defined to keep the sliding windows within the roadway of the direction of travel of the vehicle to avoid any unnecessary false positives. The images below visualize the sliding windows for the SVM and neural net respectively.
 
-####1. Explain how (and identify where in your code) you extracted HOG features from the training images.
+SVM windows:
+<img src="./output_images/SVM_windows.png">
 
-The code for this step is contained in the first code cell of the IPython notebook (or in lines # through # of the file called `some_file.py`).  
+NN windows:
+<img src="./output_images/NN_windows.png">
 
-I started by reading in all the `vehicle` and `non-vehicle` images.  Here is an example of one of each of the `vehicle` and `non-vehicle` classes:
+### 4.2 Search Optimization
+The sliding window approach is relatively slow since an image patch needs to be extracted, processed and fed into the model for each window position, scale and ultimately sequence of frames when the video is analyzed. Performing this task with the SVM and without any sort of optimization resulted in an average image processing time of >2 seconds/image which was not practical.
 
-![alt text][image1]
+#### 4.2.1 HOG Subsampling
+The HOG subsampling approach allowed for efficient extraction of image patches and features from the test images. In particular, the HOG features were computed once for the entire frame and then array slicing was used to obtain the relevant HOG features. The same slicing parameters were then fed into the functions responsible for extracting the spatially binned and color histogram features. This process was repeated for the various scales of image windows required. It is important to note that the window scales need to be adjusted for HOG subsampling to maintain the same scales visualized above. This was necessary since the HOG subsampling approach downsamples the image while maintaining the same window size to achieve a scaling effect. The window size for the HOG subsampling is 64x64 (the same size as the training images), hence a scaling factor of 80/64 is used for each of the window scales defined above. Details of this approach can be found in the ```find_cars()``` function in the SVM pipline notebook. 
 
-I then explored different color spaces and different `skimage.hog()` parameters (`orientations`, `pixels_per_cell`, and `cells_per_block`).  I grabbed random images from each of the two classes and displayed them to get a feel for what the `skimage.hog()` output looks like.
+This reduced the average processing time of an image from input to prediction to 0.34 seconds. This is still not good enough for real-time detection but is a significant improvement over the unoptimized case. 
 
-Here is an example using the `YCrCb` color space and HOG parameters of `orientations=8`, `pixels_per_cell=(8, 8)` and `cells_per_block=(2, 2)`:
+#### 4.2.2. Image Views & Batch Prediction
+The neural network approach also needed significant optimization to be practical. The unoptimized approach of extract single image patches and performing prediction on one sample at a time resulted in an average test image processing time of >3 seconds. The neural net was optimized using two methods.
 
+First, the Scikit-Image function ```view_as_windows()``` was used to create views of the image. This allowed for efficient extraction of the required patches from the images bu simply defining the step sizes and search extents of the image. This function had to be called on each image channel at a time after which the results were stacked, reshaped into the correct dimensions and resized to 32x32 pixels for input into the classifier. Details of this processing can be found in the ```create_views()``` function of the NN pipeline notebook.
 
-![alt text][image2]
+The second optimization technique was to perform batch prediction on the views created for the entire frame at once as opposed to looping over each view one at a time. Details of the implementation can be found in the ```search_windows()``` function of the NN pipeline notebook.
 
-####2. Explain how you settled on your final choice of HOG parameters.
+The combination of these techniques reduced the average processing time of a test image to 0.19 seconds which is a significant reduction over the base case and also faster than the SVM approach. However, this is still not fast enough for real-time detection.
 
-I tried various combinations of parameters and...
+### 4.3 Heatmaps & False Positives
 
-####3. Describe how (and identify where in your code) you trained a classifier using your selected HOG features (and color features if you used them).
+The SVM and NN both correctly detected and classified the vehicles in the test images. Multiple detections were returned for each vehicle and these needed to be grouped into a single bounding box and thresholded to eliminate any potential false positives in the search area. Identical code was used for both approaches since this method was independent of the type of classifier used.
 
-I trained a linear SVM using...
+The ```add_heat()``` function was first used to convert the positive detections into a heatmap. A threshold was then applied using the ```apply_threshold()``` function to eliminate regions of the search results which may be outside the body of the vehicle. Finally, the thresholded heatmap was labeled using SciPy ```label()``` function and the results were plotted on the test image. A visualization of this pipeline is available in the images below.
 
-###Sliding Window Search
+<img src="./output_images/pipe_vis.png">
 
-####1. Describe how (and identify where in your code) you implemented a sliding window search.  How did you decide what scales to search and how much to overlap windows?
+In the case of the NN, a prediction threshold was also applied to discard any predictions below a certain confidence level. This allows for further elimination of false positives and was another parameter that could be tuned. The images below visualize the final detection results of the NN.
 
-I decided to search random window positions at random scales all over the image and came up with this (ok just kidding I didn't actually ;):
+<img src="./output_images/NN_detections.png">
 
-![alt text][image3]
+Finally, an ```ImageProcessor()``` class was implemented to capture the heatmaps from successive frames when analyzing video using the ```heatmaps_list``` attribute which was a deque of maximum length defined by the attribute ```smooth_count```. This allowed for more robust weaning of false positives that may apper in a few frames. A ```vehicle_detection()``` method was also implemented for this class which recieves an image frame extracted from the video and performs all the necessary pre-processing, detection and post-processing to draw the smoothed, thresholded bounding box on the image. The details of the ```vehicle_detection()``` for each model can be found in their respective notebooks.  
 
-####2. Show some examples of test images to demonstrate how your pipeline is working.  What did you do to optimize the performance of your classifier?
-
-Ultimately I searched on two scales using YCrCb 3-channel HOG features plus spatially binned color and histograms of color in the feature vector, which provided a nice result.  Here are some example images:
-
-![alt text][image4]
----
+## **5. Results**
 
 ### Video Implementation
 
