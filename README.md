@@ -46,7 +46,7 @@ hog_channel = "ALL" # Can be 0, 1, 2, or "ALL"
 ```
 The values of the parameters above were selected after experimenting with different combinations to achieve the optimum results. Given that the input image size was 64x64, a ```pix_per_cell``` value of 8 allowed for sufficient granularity in the resulting gradients. Similarly, there wasn't a substantial performance gain achieved by increasing the granularity of the HOG orientation greater than 9 (or bins of 40 degrees). This is attributed to the fixed shape of vehicles where the gradient lines of the defining features are expected to be almost horizontal (top and bottom of vehicle rear & rear lights) or almost vertical (sides of vehicle). The image below shows a visualization of the hog features for each of the image channels in LUV space.
 
-<img src="./output_images/HOG_vis.png"
+<img src="./output_images/HOG_vis.png">
 
 The resulting feature vector size is:
 
@@ -56,7 +56,40 @@ This results in a total feature vector length of:
 
 ```Feature vector length = Spatial + Color + HOG = 3072 + 96 + 5292 = 8460```
 
+The final feature vector was then scaled and normalized using Scikit-Learn's ```Standard_Scaler()``` object to provide a final training data set of zero mean and unit variance.
+
 ### 2.3 Neural Network Training Features
+
+The neural network training features were significantly simpler than the ones used for the linear SVM. The training dataset was first converted to ```LUV``` colorspace and then resized to 32x32 pixels to reduce the number of training parameters in the final model. Normalization of the dataset was done using a Lambda layer within the model as defined in the next section.
+
+## **3. Model Architecture & Training**
+
+### 2.3 Linear Support Vector Machine
+
+The feature vectors for the 17760 training images were then extracted using the ```extract_features()``` function. The total time taken to extract the features described above was 127.03 seconds. The training data was then shuffled and 20% was split off to use as a test set after training. The model selected for the classifier was Scikit-Learn's ```LinearSVC()```. The total time taken to train the classifier was 7.05 sec. and a test accuracy of 99.41% was achieved. The trained classifer was saved using Pickle and is available in the repository files [here](URL for SVM)
+
+### 2.4 Neural Network
+
+The decision to use a neural network was motivated by earlier projects in Udacity's Self-Driving Car Nanodegree where various architectures were implemented for a range of tasks from traffic sign classification to behavioral cloning to drive an autonomous vehicle in a simulator. The challenge in using a neural network for this task was to keep the time required for a forward pass as low as possible while maintaining a good level of accuracy, therefore the LeNet-5 architecture was selected. The model was built using Keras and is described below.
+
+| Layer         | Output Shape       | Param # | Comments                                                           |
+|---------------|--------------------|---------|--------------------------------------------------------------------|
+| Normalization | (None, 32, 32, 3)  | 0       | Scale by 255 and subtract 0.5 to normalize within range [-0.5,0.5] |
+| Conv1         | (None, 28, 28, 6)  | 456     | 6 5x5 kernels, 1x1 stride, valid padding, ELU activation           |
+| MaxPool1      | (None, 14, 14, 6)  | 0       | 2x2 stride                                                         |
+| Conv2         | (None, 10, 10, 16) | 2416    | 16 5x5 kernels, 1x1 stride, valid padding, ELU activation          |
+| MaxPool2      | (None, 5, 5, 16)   | 0       | 2x2 stride                                                         |
+| Flatten       | (None, 400)        | 0       |                                                                    |
+| FC1           | (None, 120)        | 48120   | ELU activation                                                     |
+| Dropout1      | (None, 120)        | 0       |                                                                    |
+| FC2           | (None, 84)         | 10164   | ELU activation                                                     |
+| Dropout2      | (None, 84)         | 0       |                                                                    |
+| Output        | (None, 1)          | 85      | Sigmoid activation                                                 |
+
+There are a couple of notable differences between the standard LeNet-5 architecture and the one used above. Firstly, the last FC layer has a single output node with a sigmoid activation function to obtain a probability of the classification result. An adam optimizer was used to initalize and gradually decrease the learning rate during training and a ```binary_crossentropy``` loss was used since this is a binary classification problem. The metric was set to ```accuracy```.
+
+The time required to read in the images and prepare the data for training was a total of 35.03 seconds, significantly less than the time required for the SVM. The model was trained using a batch size of 512 images for 15 epochs and an ```EarlyStopping()``` callback with a patience of 1 was used to terminate training if the validation loss in subsequent epochs reduced by less than 0.01. Once again, 20% of the data was split off and used as a validation set. The total training time for the model was 160.38 seconds and was terminated at Epoch 9. The figure below shows the 
+
 
 
 * Perform a Histogram of Oriented Gradients (HOG) feature extraction on a labeled training set of images and train a classifier Linear SVM classifier
