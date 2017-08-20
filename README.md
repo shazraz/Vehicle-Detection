@@ -148,9 +148,18 @@ In the case of the NN, a prediction threshold was also applied to discard any pr
 
 <img src="./output_images/NN_detections.png">
 
-Finally, an ```ImageProcessor()``` class was implemented to capture the heatmaps from successive frames when analyzing video using the ```heatmaps_list``` attribute which was a deque of maximum length defined by the attribute ```smooth_count```. This allowed for more robust weaning of false positives that may apper in a few frames. A ```vehicle_detection()``` method was also implemented for this class which recieves an image frame extracted from the video and performs all the necessary pre-processing, detection and post-processing to draw the smoothed, thresholded bounding box on the image. The details of the ```vehicle_detection()``` for each model can be found in their respective notebooks.  
+Finally, an ```ImageProcessor()``` class was implemented to capture the heatmaps from successive frames when analyzing video using the ```heatmaps_list``` attribute which is a deque of maximum length defined by the ```smooth_count``` attribute. This allowed for more robust weaning of false positives that may apper in a few frames. A ```vehicle_detection()``` method was also implemented for this class which recieves an image frame extracted from the video and performs all the necessary pre-processing, detection and post-processing to draw the smoothed, thresholded bounding boxes on each image. The details of the ```vehicle_detection()``` method for each model can be found in their respective notebooks.  
 
 ## **5. Results**
+
+The SVM approach used a final heatmap threshold value of 8 over 10 consecutive frames along with the parameters described in earlier sections. The video output of the pipeline can be found [here](youtube link)
+
+The NN approach used a final heatmap threshold of 9 over 15 consective frames and a confidence level of 60%. The video output of the pipeline can be found [here](youtube link)
+
+The NN approach appears to be more robust than the SVM approach, particularly as the object size gets smaller (more distant cars). This is evident around the 26-28 second mark when the white vehicle is furthest away and the SVM momentarily loses the vehicle. The NN does not lose track of either vehicle throughout the duration of the video. This, however, may also be indicative of additional tuning required to get better detection via the SVM whereas the NN seems to perform relatively well for this test video with minimal tuning.
+
+## **6. Reflections**
+
 
 ### Video Implementation
 
