@@ -128,9 +128,9 @@ The HOG subsampling approach allowed for efficient extraction of image patches a
 This reduced the average processing time of an image from input to prediction to 0.34 seconds. This is still not good enough for real-time detection but is a significant improvement over the unoptimized case. 
 
 #### 4.2.2. Image Views & Batch Prediction
-The neural network approach also needed significant optimization to be practical. The unoptimized approach of extract single image patches and performing prediction on one sample at a time resulted in an average test image processing time of >3 seconds. The neural net was optimized using two methods.
+The neural network approach also needed significant optimization to be practical. The unoptimized approach of extracting a single image patches and performing prediction on one sample at a time resulted in an average test image processing time of >3 seconds. The neural net was optimized using two methods.
 
-First, the Scikit-Image function ```view_as_windows()``` was used to create views of the image. This allowed for efficient extraction of the required patches from the images bu simply defining the step sizes and search extents of the image. This function had to be called on each image channel at a time after which the results were stacked, reshaped into the correct dimensions and resized to 32x32 pixels for input into the classifier. Details of this processing can be found in the ```create_views()``` function of the NN pipeline notebook.
+First, the Scikit-Image function ```view_as_windows()``` was used to create views of the image. This allowed for efficient extraction of the required patches from the images by simply defining the step sizes and search extents of the image. This function had to be called on each image channel at a time after which the results were stacked, reshaped into the correct dimensions and resized to 32x32 pixels for input into the classifier. Details of this processing can be found in the ```create_views()``` function of the NN pipeline notebook.
 
 The second optimization technique was to perform batch prediction on the views created for the entire frame at once as opposed to looping over each view one at a time. Details of the implementation can be found in the ```search_windows()``` function of the NN pipeline notebook.
 
