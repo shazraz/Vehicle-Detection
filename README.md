@@ -22,7 +22,7 @@ The training data available for the project consisted of a combination of the GT
 * Image size: 64x64, RGB
 
 The image below shows an example of one of the training car and not-car images:
-<img src="./output_images/example_image.png">
+<img align="right" src="./output_images/example_image.png">
 
 ### 2.2 SVM Training Features
 
