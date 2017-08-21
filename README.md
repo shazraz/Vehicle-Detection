@@ -173,9 +173,17 @@ The NN approach used a final heatmap threshold of 9 over 15 consective frames an
 
 The NN approach appears to be more robust than the SVM approach, particularly as the object size gets smaller (more distant cars). This is evident around the 26-28 second mark when the white vehicle is furthest away and the SVM momentarily loses the vehicle. The NN does not lose track of either vehicle throughout the duration of the video. This, however, may also be indicative of additional tuning required to get better detection via the SVM whereas the NN seems to perform relatively well for this test video with minimal tuning.
 
+Here is a comparison of the speed of the two models for various tasks:
+<p align="center">
+<img src="./output_images/comparison.png">
+</p>
+
+The analysis above shows that the LeNet-5 architecture is faster than the SVM on the test video, however, this may also be a result of the higher number of windows used in the SVM to get better accuracy. It was also noted during this exercise that it is much simpler to build and train a neural network to perform the classification task as opposed to manually crafting the feature vector to be used by the SVM.
+
 ## **6. Reflections**
 
-####1. Briefly discuss any problems / issues you faced in your implementation of this project.  Where will your pipeline likely fail?  What could you do to make it more robust?
+The speed of the SVM approach could  be improved by performing batch predictions instead of looping through predicitons. Additionally, the creation of the ```windows``` array in the NN approach could be vectorized as well to futher improve the speed.
 
-Here I'll talk about the approach I took, what techniques I used, what worked and why, where the pipeline might fail and how I might improve it if I were going to pursue this project further.  
+However, even with these additional optimizations, a major limitations of both these approaches is the inability to do real-time detection which requires an image processing time of approximately 30 ms to do at least 30 fps. The current image processing time for the neural network approach is 190ms. An extension of this project may involve the use of YOLOv2 to perform faster localization and classification of objects. Additionally, it is noted that the ```cv2.Rectangle()``` routine used to plot the bounding boxes may take up to 20 ms which would need to be significantly reduced for real-time detection.
 
+This pipeline was only tested on the project video provided as part of the Udacity project repository which is well illuminated. Future work would involve testing this pipeline in poorly illuminated or night-time conditions to test it's robustness. It is suspected that the pipeline may not perform as well under those conditions.
