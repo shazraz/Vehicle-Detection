@@ -1,4 +1,4 @@
-# Vehicle-Detecton
+# Vehicle Detection
 Comparison of vehicle detection using color/HOG features and LeNet-5
 
 ## **1. Introduction**
