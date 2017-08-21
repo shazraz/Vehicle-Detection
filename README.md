@@ -75,7 +75,7 @@ The neural network training features were significantly simpler than the ones us
 
 ### 3.1 Linear Support Vector Machine
 
-The feature vectors for the 17760 training images were then extracted using the ```extract_features()``` function. The total time taken to extract the features described above was 127.03 seconds. The training data was then shuffled and 20% was split off to use as a test set after training. The model selected for the classifier was Scikit-Learn's ```LinearSVC()```. The total time taken to train the classifier was 7.05 sec. and a test accuracy of 99.41% was achieved. The trained classifer was saved using Pickle and is available in the repository files [here]((./models))
+The feature vectors for the 17760 training images were then extracted using the ```extract_features()``` function. The total time taken to extract the features described above was 127.03 seconds. The training data was then shuffled and 20% was split off to use as a test set after training. The model selected for the classifier was Scikit-Learn's ```LinearSVC()```. The total time taken to train the classifier was 7.05 sec. and a test accuracy of 99.41% was achieved. The trained classifer was saved using Pickle and is available in the repository files [here](./models).
 
 ### 3.2 Neural Network
 
@@ -159,7 +159,9 @@ The SVM and NN both correctly detected and classified the vehicles in the test i
 
 The ```add_heat()``` function was first used to convert the positive detections into a heatmap. A threshold was then applied using the ```apply_threshold()``` function to eliminate regions of the search results which may be outside the body of the vehicle. Finally, the thresholded heatmap was labeled using SciPy ```label()``` function and the results were plotted on the test image. A visualization of this pipeline is available in the images below.
 
+<p align="center">
 <img src="./output_images/pipe_vis.png">
+</p>
 
 In the case of the NN, a prediction threshold was also applied to discard any predictions below a certain confidence level. This allows for further elimination of false positives and was another parameter that could be tuned. The images below visualize the final detection results of the NN.
 
@@ -171,9 +173,9 @@ Finally, an ```ImageProcessor()``` class was implemented to capture the heatmaps
 
 ## **5. Results**
 
-The SVM approach used a final heatmap threshold value of 8 over 10 consecutive frames along with the parameters described in earlier sections. The video output of the pipeline can be found [here](https://youtu.be/nW4-ouvLMLM)
+The SVM approach used a final heatmap threshold value of 8 over 10 consecutive frames along with the parameters described in earlier sections. The video output of the pipeline can be found [here](https://youtu.be/nW4-ouvLMLM).
 
-The NN approach used a final heatmap threshold of 9 over 15 consective frames and a confidence level of 60%. The video output of the pipeline can be found [here](https://youtu.be/BtA2LCyARxA)
+The NN approach used a final heatmap threshold of 9 over 15 consective frames and a confidence level of 60%. The video output of the pipeline can be found [here](https://youtu.be/BtA2LCyARxA).
 
 The NN approach appears to be more robust than the SVM approach, particularly as the object size gets smaller (more distant cars). This is evident around the 26-28 second mark when the white vehicle is furthest away and the SVM momentarily loses the vehicle. The NN does not lose track of either vehicle throughout the duration of the video. This, however, may also be indicative of additional tuning required to get better detection via the SVM whereas the NN seems to perform relatively well for this test video with minimal tuning.
 
