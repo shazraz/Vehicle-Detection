@@ -75,11 +75,11 @@ The neural network training features were significantly simpler than the ones us
 
 ### 3.1 Linear Support Vector Machine
 
-The feature vectors for the 17760 training images were then extracted using the ```extract_features()``` function. The total time taken to extract the features described above was 127.03 seconds. The training data was then shuffled and 20% was split off to use as a test set after training. The model selected for the classifier was Scikit-Learn's ```LinearSVC()```. The total time taken to train the classifier was 7.05 sec. and a test accuracy of 99.41% was achieved. The trained classifer was saved using Pickle and is available in the repository files [here]((./models))
+The feature vectors for the 17760 training images were then extracted using the ```extract_features()``` function. The total time taken to extract the features described above was 127.03 seconds. The training data was then shuffled and 20% was split off to use as a test set after training. The model selected for the classifier was Scikit-Learn's ```LinearSVC()```. The total time taken to train the classifier was 7.05 sec. and a test accuracy of 99.41% was achieved. The trained classifer was saved using Pickle and is available in the repository files [here](./models).
 
 ### 3.2 Neural Network
 
-The decision to use a neural network was motivated by earlier projects in Udacity's Self-Driving Car Nanodegree where various architectures were implemented for a range of tasks from traffic sign classification to behavioral cloning to drive an autonomous vehicle in a simulator. The challenge in using a neural network for this task was to keep the time required for a forward pass as low as possible while maintaining a good level of accuracy, therefore the LeNet-5 architecture was selected. The model was built using Keras and is described below.
+The decision to use a neural network was motivated by earlier projects in Udacity's Self-Driving Car Nanodegree where various architectures were implemented for a range of tasks from traffic sign classification to driving an autonomous vehicle in a simulator. The challenge in using a neural network for this task was to keep the time required for a forward pass as low as possible while maintaining a good level of accuracy, therefore the LeNet-5 architecture was selected. The model was built using Keras and is described below.
 
 | Layer         | Output Shape       | Param # | Comments                                                           |
 |---------------|--------------------|---------|--------------------------------------------------------------------|
@@ -109,7 +109,9 @@ The trained model is available [here](./models).
 
 ### 4.1 Sliding Windows
 
-A sliding window approach was then used to extract image patches and feed them into either the SVM or Neural Net to perform classification. A window size of 80x80 pixels was used with a 75% overlap in both the x and y directions. It was found that the SVM classifier required a larger number and scale of windows to perform more accurately. The parameters for each of the models are described below.
+A sliding window approach was then used to extract image patches and feed them into either the SVM or Neural Net to perform classification. A window size of 80x80 pixels was used with a 75% overlap in both the x and y directions. These parameters were obtained after experimenting with several values. It was determined that increasing the overlap of the sliding windows resulted in multiple detections which provided better accuracy later in the pipeline. However, this also increased the number of total windows which increased the time required for a forward pass on a test image.
+
+Additionally, the SVM classifier required a larger number and scale of windows to perform as accurately as the NN approach. The parameters for each of the models are described below.
 
 ```
 SVM:
@@ -159,7 +161,9 @@ The SVM and NN both correctly detected and classified the vehicles in the test i
 
 The ```add_heat()``` function was first used to convert the positive detections into a heatmap. A threshold was then applied using the ```apply_threshold()``` function to eliminate regions of the search results which may be outside the body of the vehicle. Finally, the thresholded heatmap was labeled using SciPy ```label()``` function and the results were plotted on the test image. A visualization of this pipeline is available in the images below.
 
+<p align="center">
 <img src="./output_images/pipe_vis.png">
+</p>
 
 In the case of the NN, a prediction threshold was also applied to discard any predictions below a certain confidence level. This allows for further elimination of false positives and was another parameter that could be tuned. The images below visualize the final detection results of the NN.
 
@@ -171,9 +175,9 @@ Finally, an ```ImageProcessor()``` class was implemented to capture the heatmaps
 
 ## **5. Results**
 
-The SVM approach used a final heatmap threshold value of 8 over 10 consecutive frames along with the parameters described in earlier sections. The video output of the pipeline can be found [here](https://youtu.be/nW4-ouvLMLM)
+The SVM approach used a final heatmap threshold value of 8 over 10 consecutive frames along with the parameters described in earlier sections. The video output of the pipeline can be found [here](https://youtu.be/nW4-ouvLMLM).
 
-The NN approach used a final heatmap threshold of 9 over 15 consective frames and a confidence level of 60%. The video output of the pipeline can be found [here](https://youtu.be/BtA2LCyARxA)
+The NN approach used a final heatmap threshold of 9 over 15 consective frames and a confidence level of 60%. The video output of the pipeline can be found [here](https://youtu.be/BtA2LCyARxA).
 
 The NN approach appears to be more robust than the SVM approach, particularly as the object size gets smaller (more distant cars). This is evident around the 26-28 second mark when the white vehicle is furthest away and the SVM momentarily loses the vehicle. The NN does not lose track of either vehicle throughout the duration of the video. This, however, may also be indicative of additional tuning required to get better detection via the SVM whereas the NN seems to perform relatively well for this test video with minimal tuning.
 
@@ -188,6 +192,6 @@ The analysis above shows that the LeNet-5 architecture is faster than the SVM on
 
 The speed of the SVM approach could  be improved by performing batch predictions instead of looping through predicitons. Additionally, the creation of the ```windows``` array in the NN approach could be vectorized as well to futher improve the speed.
 
-However, even with these additional optimizations, a major limitations of both these approaches is the inability to do real-time detection which requires an image processing time of approximately 30 ms to do at least 30 fps. The current image processing time for the neural network approach is 190ms. An extension of this project may involve the use of YOLOv2 to perform faster localization and classification of objects. Additionally, it is noted that the ```cv2.Rectangle()``` routine used to plot the bounding boxes may take up to 20 ms which would need to be significantly reduced for real-time detection.
+However, even with these additional optimizations, both these models are unable to do real-time detection which requires an image processing time of approximately 30 ms to do at least 30 fps. An extension of this project may involve the use of YOLOv2 to perform faster localization and classification of objects. Additionally, it is noted that the ```cv2.Rectangle()``` routine used to plot the bounding boxes may take up to 20 ms which would need to be significantly reduced for real-time detection.
 
 This pipeline was only tested on the project video provided as part of the Udacity project repository which is well illuminated. Future work would involve testing this pipeline in poorly illuminated or night-time conditions to test it's robustness. It is suspected that the pipeline may not perform as well under those conditions.
