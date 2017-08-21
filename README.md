@@ -22,7 +22,10 @@ The training data available for the project consisted of a combination of the GT
 * Image size: 64x64, RGB
 
 The image below shows an example of one of the training car and not-car images:
-<img align="right" src="./output_images/example_image.png">
+
+<p align="center">
+<img src="./output_images/example_image.png">
+</p>
 
 ### 2.2 SVM Training Features
 
@@ -92,7 +95,9 @@ There are a couple of notable differences between the standard LeNet-5 architect
 
 The time required to read in the images and prepare the data for training was a total of 35.03 seconds, significantly less than the time required for the SVM. The model was trained using a batch size of 512 images for 15 epochs and an ```EarlyStopping()``` callback with a patience of 1 was used to terminate training if the validation loss in subsequent epochs reduced by less than 0.01. Once again, 20% of the data was split off and used as a validation set. The total training time for the model was 160.38 seconds and was terminated at Epoch 9. The figure below shows the training and validation loss.
 
+<p align="center">
 <img src="./output_images/training_history.png">
+</p>
 
 The trained model is available [here](./models).
 
@@ -118,10 +123,14 @@ Total windows/image: 238
 The search limits of the image were defined to keep the sliding windows within the roadway of the direction of travel of the vehicle to avoid any unnecessary false positives. The images below visualize the sliding windows for the SVM and neural net respectively.
 
 SVM windows:
+<p align="center">
 <img src="./output_images/SVM_windows.png">
+</p>
 
 NN windows:
+<p align="center">
 <img src="./output_images/NN_windows.png">
+</p>
 
 ### 4.2 Search Optimization
 The sliding window approach is relatively slow since an image patch needs to be extracted, processed and fed into the model for each window position, scale and ultimately sequence of frames when the video is analyzed. Performing this task with the SVM and without any sort of optimization resulted in an average image processing time of >2 seconds/image which was not practical.
@@ -150,7 +159,9 @@ The ```add_heat()``` function was first used to convert the positive detections 
 
 In the case of the NN, a prediction threshold was also applied to discard any predictions below a certain confidence level. This allows for further elimination of false positives and was another parameter that could be tuned. The images below visualize the final detection results of the NN.
 
+<p align="center">
 <img src="./output_images/NN_detections.png">
+</p>
 
 Finally, an ```ImageProcessor()``` class was implemented to capture the heatmaps from successive frames when analyzing video using the ```heatmaps_list``` attribute which is a deque of maximum length defined by the ```smooth_count``` attribute. This allowed for more robust weaning of false positives that may apper in a few frames. A ```vehicle_detection()``` method was also implemented for this class which recieves an image frame extracted from the video and performs all the necessary pre-processing, detection and post-processing to draw the smoothed, thresholded bounding boxes on each image. The details of the ```vehicle_detection()``` method for each model can be found in their respective notebooks.  
 
@@ -163,35 +174,6 @@ The NN approach used a final heatmap threshold of 9 over 15 consective frames an
 The NN approach appears to be more robust than the SVM approach, particularly as the object size gets smaller (more distant cars). This is evident around the 26-28 second mark when the white vehicle is furthest away and the SVM momentarily loses the vehicle. The NN does not lose track of either vehicle throughout the duration of the video. This, however, may also be indicative of additional tuning required to get better detection via the SVM whereas the NN seems to perform relatively well for this test video with minimal tuning.
 
 ## **6. Reflections**
-
-
-### Video Implementation
-
-####1. Provide a link to your final video output.  Your pipeline should perform reasonably well on the entire project video (somewhat wobbly or unstable bounding boxes are ok as long as you are identifying the vehicles most of the time with minimal false positives.)
-Here's a [link to my video result](./project_video.mp4)
-
-
-####2. Describe how (and identify where in your code) you implemented some kind of filter for false positives and some method for combining overlapping bounding boxes.
-
-I recorded the positions of positive detections in each frame of the video.  From the positive detections I created a heatmap and then thresholded that map to identify vehicle positions.  I then used `scipy.ndimage.measurements.label()` to identify individual blobs in the heatmap.  I then assumed each blob corresponded to a vehicle.  I constructed bounding boxes to cover the area of each blob detected.  
-
-Here's an example result showing the heatmap from a series of frames of video, the result of `scipy.ndimage.measurements.label()` and the bounding boxes then overlaid on the last frame of video:
-
-### Here are six frames and their corresponding heatmaps:
-
-![alt text][image5]
-
-### Here is the output of `scipy.ndimage.measurements.label()` on the integrated heatmap from all six frames:
-![alt text][image6]
-
-### Here the resulting bounding boxes are drawn onto the last frame in the series:
-![alt text][image7]
-
-
-
----
-
-###Discussion
 
 ####1. Briefly discuss any problems / issues you faced in your implementation of this project.  Where will your pipeline likely fail?  What could you do to make it more robust?
 
