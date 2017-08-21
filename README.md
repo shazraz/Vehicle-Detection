@@ -109,7 +109,9 @@ The trained model is available [here](./models).
 
 ### 4.1 Sliding Windows
 
-A sliding window approach was then used to extract image patches and feed them into either the SVM or Neural Net to perform classification. A window size of 80x80 pixels was used with a 75% overlap in both the x and y directions. It was found that the SVM classifier required a larger number and scale of windows to perform more accurately. The parameters for each of the models are described below.
+A sliding window approach was then used to extract image patches and feed them into either the SVM or Neural Net to perform classification. A window size of 80x80 pixels was used with a 75% overlap in both the x and y directions. These parameters were obtained after experimenting with several values. It was determined that increasing the overlap of the sliding windows resulted in multiple detections which provided better accuracy later in the pipeline. However, this also increased the number of total windows which increased the time required for a forward pass on a test image.
+
+Additionally, the SVM classifier required a larger number and scale of windows to perform as accurately as the NN approach. The parameters for each of the models are described below.
 
 ```
 SVM:
