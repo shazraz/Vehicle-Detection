@@ -46,7 +46,9 @@ hog_channel = "ALL" # Can be 0, 1, 2, or "ALL"
 ```
 The values of the parameters above were selected after experimenting with different combinations to achieve the optimum results. Given that the input image size was 64x64, a ```pix_per_cell``` value of 8 allowed for sufficient granularity in the resulting gradients. Similarly, there wasn't a substantial performance gain achieved by increasing the granularity of the HOG orientation greater than 9 (or bins of 40 degrees). This is attributed to the fixed shape of vehicles where the gradient lines of the defining features are expected to be almost horizontal (top and bottom of vehicle rear & rear lights) or almost vertical (sides of vehicle). The image below shows a visualization of the hog features for each of the image channels in LUV space.
 
+<p align="center">
 <img src="./output_images/HOG_vis.png">
+</p>
 
 The resulting feature vector size is:
 
