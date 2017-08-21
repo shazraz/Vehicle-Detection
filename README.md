@@ -65,7 +65,11 @@ The final feature vector was then scaled and normalized using Scikit-Learn's ```
 
 ### 2.3 Neural Network Training Features
 
-The neural network training features were significantly simpler than the ones used for the linear SVM. The training dataset was first converted to ```LUV``` colorspace and then resized to 32x32 pixels to reduce the number of training parameters in the final model. Normalization of the dataset was done using a Lambda layer within the model as defined in the next section.
+The neural network training features were significantly simpler than the ones used for the linear SVM. The training dataset was first converted to ```LUV``` colorspace and then resized to 32x32 pixels to reduce the number of training parameters in the final model. Normalization of the dataset was done using a Lambda layer within the model as defined in the next section. The image below visualizes the LUV colorpsace in grayscale for a test car image.
+
+<p align="center">
+<img src="./output_images/LUV.png">
+</p>
 
 ## **3. Model Architecture & Training**
 
